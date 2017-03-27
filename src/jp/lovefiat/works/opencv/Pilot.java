@@ -115,30 +115,31 @@ public class Pilot {
 	 * @param source ソースのイメージファイル
 	 */
 	public boolean detectFace(File source) {
-		final String settingFileName = "haarcascades/haarcascade_frontalface_default.xml";
 
-		getLogger().fine("Image file: " + source);
+		final String settingFileName = OpenCVDictionary.Haarcascade.FRONTALFACE_DEFAULT;
+
+		getLogger().info("Image file: " + source);
 		if (source != null && !source.exists() && !source.isFile()) {
 			return false;
 		}
 		// イメージを読み込む
-		getLogger().finer("Loading image...");
+		getLogger().fine("Loading image...");
 		Mat image = Imgcodecs.imread(source.getAbsolutePath());
 		if (image == null) {
 			throw new IllegalArgumentException("Illegal image file.");
 		}
 		// 顔検出のための設定を読み込む
-		getLogger().finer("Loading setting...");
+		getLogger().fine("Loading setting...");
 		File setting = resolveOpenCVFile(settingFileName).toFile();
 		if (!setting.exists()) {
 			throw new RuntimeException(settingFileName + " is not found.");
 		}
-		getLogger().finer("detecting faces...");
+		getLogger().info("detecting faces...");
 		MatOfRect faces = new MatOfRect();
 		CascadeClassifier faceDetector = new CascadeClassifier(
 				setting.getAbsolutePath());
 		faceDetector.detectMultiScale(image, faces);
-		getLogger().finer(String.format("Detected %d faces.", faces.toArray().length));
+		getLogger().fine(String.format("Detected %d faces.", faces.toArray().length));
 		// 検出した部分をマーク
 		for (Rect rect : faces.toArray()) {
 			Imgproc.rectangle(
@@ -149,7 +150,7 @@ public class Pilot {
 		}
 		// 画像ファイルに出力
 		String destFile = makeFileName(source, "-face-detected");
-		getLogger().fine("Write to " + destFile);
+		getLogger().info("Write to " + destFile);
 		Imgcodecs.imwrite(destFile, image);
 		
 		image.release();
