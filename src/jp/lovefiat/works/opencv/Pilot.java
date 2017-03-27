@@ -23,12 +23,14 @@ import org.opencv.objdetect.CascadeClassifier;
  *
  */
 public class Pilot {
-
+	/** ロガー */
 	private static Logger logger = null;
-	
+	/** ネイティブライブラリの読み込みステータス */
 	private static boolean isLibraryLoaded = false;
+	/** OpenCV ホームディレクトリ */
 	private static Path sOpencvHome = null;
 	/**
+	 * ロガーを取得します
 	 * 
 	 * @return
 	 */
@@ -57,7 +59,10 @@ public class Pilot {
 			isLibraryLoaded = true;
 		}
 	}
-	
+	/**
+	 * OpenCV のホームディレクトリを設定します
+	 * @param abspath
+	 */
 	public static void setupHomeDirectory(String abspath) {
 		File file = new File(abspath);
 		if (file.exists() && file.isDirectory()) {
@@ -107,7 +112,7 @@ public class Pilot {
 	/**
 	 * 顔認識
 	 * 
-	 * @param source
+	 * @param source ソースのイメージファイル
 	 */
 	public boolean detectFace(File source) {
 		final String settingFileName = "haarcascades/haarcascade_frontalface_default.xml";
@@ -151,7 +156,13 @@ public class Pilot {
 
 		return true;
 	}
-	
+	/**
+	 * 新しいファイル名を作成
+	 * 
+	 * @param source ベースファイルパス
+	 * @param suffix サフィックス
+	 * @return
+	 */
 	private String makeFileName(File source, String suffix) {
 		String[] parts = source.getName().split("\\.");
 		StringBuilder newName = new StringBuilder(source.getParent() + File.separator + parts[0]);
@@ -163,7 +174,12 @@ public class Pilot {
 		
 		return newName.toString();
 	}
-	
+	/**
+	 * OpenCV ホームディレクトリよりファイル名を解決
+	 * 
+	 * @param filename 相対ファイル名
+	 * @return
+	 */
 	private Path resolveOpenCVFile(String filename) {
 		Path abs = sOpencvHome;
 		if (sOpencvHome != null) {

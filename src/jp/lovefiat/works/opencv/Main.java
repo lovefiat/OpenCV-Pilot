@@ -5,6 +5,13 @@ import java.io.File;
 public class Main {
 	private static String OPENCV3_HOME = "/usr/local/Cellar/opencv3/3.2.0/share/OpenCV";
 
+	/**
+	 * エントリポイント
+	 * 
+	 * 使用方法: Main <イメージファイルパス>
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		
 		System.out.println("Start.");
