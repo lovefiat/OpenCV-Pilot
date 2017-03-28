@@ -21,6 +21,10 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/Cellar/opencv3/3.2.0/share/OpenCV/java/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/usr/local/Cellar/opencv3/3.2.0/share/OpenCV/java/opencv-320.jar"/>
+	<classpathentry kind="lib" path="/usr/local/Cellar/opencv3/3.2.0/share/OpenCV/java/opencv-320.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/Users/take/developer/OpenCV-android-sdk/sdk/java/javadoc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

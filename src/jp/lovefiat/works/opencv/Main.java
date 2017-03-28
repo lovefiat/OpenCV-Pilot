@@ -2,8 +2,13 @@ package jp.lovefiat.works.opencv;
 
 import java.io.File;
 
+import jp.lovefiat.works.opencv.ImageOperation.Operator;
+
 public class Main {
-	private static String OPENCV3_HOME = "/usr/local/Cellar/opencv3/3.2.0/share/OpenCV";
+	
+	private static final String OPENCV3_HOME = "/usr/local/Cellar/opencv3/3.2.0/share/OpenCV";
+	private static final String MODE_FACE = "-face";
+	private static final String MODE_EDGE = "-edge";
 
 	/**
 	 * エントリポイント
@@ -24,15 +29,33 @@ public class Main {
 		// OpenCV チェック
 		pilot.check();
 		
-		// 静止画 - 顔認識
-		ImageOperation operation = new ImageOperation(ImageOperation.Operator.FACE_DETECT);
-		if (args.length > 0) {
-			// 最初の引数をファイル名として取り扱う
-			operation.sourceFile = new File(args[0]);			
+		if (args.length < 2) {
+			printUsage();
+			return;
 		}
+		
+		ImageOperation operation = new ImageOperation(getOperator(args[0]));
+		operation.sourceFile = new File(args[1]);
 		pilot.flight(operation);
 		
 		System.out.println("Finish.");
+	}
+	
+	private static ImageOperation.Operator getOperator(String mode) {
+		ImageOperation.Operator ope = Operator.NONE;
+		switch (mode.toLowerCase()) {
+		case MODE_EDGE:
+			ope = Operator.EDGE_DETECT;
+			break;
+		case MODE_FACE:
+			ope = Operator.FACE_DETECT;
+			break;
+		}
+		return ope;
+	}
+	
+	private static void printUsage() {
+		
 	}
 
 }

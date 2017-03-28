@@ -20,6 +20,8 @@ import org.opencv.objdetect.CascadeClassifier;
  * OpenCV (Open Source Computer Vision Library) の実験クラス
  * 
  * @author take
+ * 
+ * @see http://docs.opencv.org/java/3.1.0/
  *
  */
 public class Pilot {
@@ -29,6 +31,9 @@ public class Pilot {
 	private static boolean isLibraryLoaded = false;
 	/** OpenCV ホームディレクトリ */
 	private static Path sOpencvHome = null;
+	
+	private ImageOperation currentOperation;
+	
 	/**
 	 * ロガーを取得します
 	 * 
@@ -94,9 +99,14 @@ public class Pilot {
 	 */
 	public void flight(ImageOperation imageOperation) {
 
+		this.currentOperation = imageOperation;
+		
 		switch (imageOperation.operation) {
 		case FACE_DETECT:
-			detectFace(imageOperation.sourceFile);
+			detectFaceByHaarLike();
+			break;
+		case EDGE_DETECT:
+			detectEdgeByCanny();
 			break;
 		default:
 			getLogger().warning("Unknown operation: " + imageOperation.operation.toString());
@@ -108,23 +118,22 @@ public class Pilot {
 	private static void println(String msg) {
 		getLogger().finest(msg);
 	}
-
+	
 	/**
-	 * 顔認識
-	 * 
-	 * @param source ソースのイメージファイル
+	 * Haar-like 特徴分類器による顔認識
 	 */
-	public boolean detectFace(File source) {
+	public boolean detectFaceByHaarLike() {
 
 		final String settingFileName = OpenCVDictionary.Haarcascade.FRONTALFACE_DEFAULT;
 
+		File source = this.currentOperation.sourceFile;
 		getLogger().info("Image file: " + source);
 		if (source != null && !source.exists() && !source.isFile()) {
 			return false;
 		}
 		// イメージを読み込む
 		getLogger().fine("Loading image...");
-		Mat image = Imgcodecs.imread(source.getAbsolutePath());
+		Mat image = this.currentOperation.readImageSource();
 		if (image == null) {
 			throw new IllegalArgumentException("Illegal image file.");
 		}
@@ -136,6 +145,7 @@ public class Pilot {
 		}
 		getLogger().info("detecting faces...");
 		MatOfRect faces = new MatOfRect();
+		// 顔検出器
 		CascadeClassifier faceDetector = new CascadeClassifier(
 				setting.getAbsolutePath());
 		faceDetector.detectMultiScale(image, faces);
@@ -154,6 +164,38 @@ public class Pilot {
 		Imgcodecs.imwrite(destFile, image);
 		
 		image.release();
+
+		return true;
+	}
+	/**
+	 * Cannyアルゴリズムによるエッジ検出
+	 */
+	private boolean detectEdgeByCanny() {
+		File source = this.currentOperation.sourceFile;
+		getLogger().info("Image file: " + source);
+		if (source != null && !source.exists() && !source.isFile()) {
+			return false;
+		}
+		// イメージを読み込む
+		getLogger().fine("Loading image...");
+		Mat image = this.currentOperation.readImageSource();
+		if (image == null) {
+			throw new IllegalArgumentException("Illegal image file.");
+		}
+		// エッジ検出
+		getLogger().info("detecting edge...");
+		Mat gray = new Mat();
+		double threshold1 = 150;	// 閾値１
+		double threshold2 = 100;	// 閾値２
+		Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGB2GRAY);	// オリジナル画像をグレースケール化
+		Imgproc.Canny(gray, gray, threshold1, threshold2); // Cannyアルゴ実行
+		// 画像ファイルに出力
+		String destFile = makeFileName(source, "-edge-detected");
+		getLogger().info("Write to " + destFile);
+		Imgcodecs.imwrite(destFile, gray);
+		// 終了
+		image.release();
+		gray.release();
 
 		return true;
 	}
