@@ -3,12 +3,14 @@ package jp.lovefiat.works.opencv;
 import java.io.File;
 
 import jp.lovefiat.works.opencv.ImageOperation.Operator;
+import jp.lovefiat.works.opencv.gui.MainFrame;
 
 public class Main {
 	
 	private static final String OPENCV3_HOME = "/usr/local/Cellar/opencv3/3.2.0/share/OpenCV";
 	private static final String MODE_FACE = "-face";
 	private static final String MODE_EDGE = "-edge";
+	private static final String MODE_HOUGH_P = "-hough";
 
 	/**
 	 * エントリポイント
@@ -38,6 +40,10 @@ public class Main {
 		operation.sourceFile = new File(args[1]);
 		pilot.flight(operation);
 		
+		MainFrame frame = new MainFrame("OpenCV Pilot");
+		frame.setImageSourceDir(new File(".").toPath());
+		frame.start();
+		
 		System.out.println("Finish.");
 	}
 	
@@ -49,6 +55,9 @@ public class Main {
 			break;
 		case MODE_FACE:
 			ope = Operator.FACE_DETECT;
+			break;
+		case MODE_HOUGH_P:
+			ope = Operator.HOUGHT_LINES_P;
 			break;
 		}
 		return ope;

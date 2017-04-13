@@ -14,6 +14,7 @@ public class ImageOperation {
 		NONE,			/** NONE */
 		FACE_DETECT,	/** 顔検出（既定） */
 		EDGE_DETECT,	/** エッジ検出（既定） */
+		HOUGHT_LINES_P,	/** 確率的Hough変換 */
 	}
 	/** 操作方法 */
 	Operator operation = Operator.NONE;

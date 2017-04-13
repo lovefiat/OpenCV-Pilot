@@ -108,6 +108,9 @@ public class Pilot {
 		case EDGE_DETECT:
 			detectEdgeByCanny();
 			break;
+		case HOUGHT_LINES_P:
+			detectLinesByHoughLinesP();
+			break;
 		default:
 			getLogger().warning("Unknown operation: " + imageOperation.operation.toString());
 			break;
@@ -196,6 +199,53 @@ public class Pilot {
 		// 終了
 		image.release();
 		gray.release();
+
+		return true;
+	}
+	/**
+	 * 確率的ハフ変換による直線検出
+	 * @return
+	 */
+	private boolean detectLinesByHoughLinesP() {
+		File source = this.currentOperation.sourceFile;
+		getLogger().info("Image file: " + source);
+		if (source != null && !source.exists() && !source.isFile()) {
+			return false;
+		}
+		// イメージを読み込む
+		getLogger().fine("Loading image...");
+		Mat image = this.currentOperation.readImageSource();
+		if (image == null) {
+			throw new IllegalArgumentException("Illegal image file.");
+		}
+		// エッジ検出
+		getLogger().info("detecting edge...");
+		Mat gray = new Mat();
+		double threshold1 = 200;	// 閾値１
+		double threshold2 = 3;	// 閾値２
+		Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGB2GRAY);	// オリジナル画像をグレースケール化
+		Imgproc.Canny(gray, gray, threshold1, threshold2); // Cannyアルゴ実行
+		// 確率的ハフ変換
+		Mat lines = new Mat();
+		Imgproc.HoughLinesP(gray, lines, 1, Math.PI/180, 80, 30, 10);
+		gray.release();
+
+		double[] matrix;
+		Point p1;
+		Point p2;
+		for (int i=0; i<lines.cols(); i++) {
+			matrix = lines.get(0, i);
+			p1 = new Point(matrix[0], matrix[1]);
+			p2 = new Point(matrix[2], matrix[3]);
+			Imgproc.line(image, p1, p2, new Scalar(0, 256, 0), 5);
+		}
+		String destFile = makeFileName(source, "-edge-detected");
+		getLogger().info("Write to " + destFile);
+		Imgcodecs.imwrite(destFile, image);
+		
+		// 終了
+		lines.release();
+		image.release();
 
 		return true;
 	}
