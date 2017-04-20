@@ -2,16 +2,20 @@ package jp.lovefiat.works.opencv;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.opencv.core.Core;
+import org.opencv.core.KeyPoint;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.features2d.FeatureDetector;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
@@ -111,6 +115,9 @@ public class Pilot {
 		case HOUGHT_LINES_P:
 			detectLinesByHoughLinesP();
 			break;
+		case SIMPLE_BLOB_DETECT:
+			detectSimpleBlob();
+			break;
 		default:
 			getLogger().warning("Unknown operation: " + imageOperation.operation.toString());
 			break;
@@ -188,8 +195,8 @@ public class Pilot {
 		// エッジ検出
 		getLogger().info("detecting edge...");
 		Mat gray = new Mat();
-		double threshold1 = 150;	// 閾値１
-		double threshold2 = 100;	// 閾値２
+		double threshold1 = this.currentOperation.mThresHold1;	// 閾値１
+		double threshold2 = this.currentOperation.mThresHold2;	// 閾値２
 		Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGB2GRAY);	// オリジナル画像をグレースケール化
 		Imgproc.Canny(gray, gray, threshold1, threshold2); // Cannyアルゴ実行
 		// 画像ファイルに出力
@@ -221,31 +228,88 @@ public class Pilot {
 		// エッジ検出
 		getLogger().info("detecting edge...");
 		Mat gray = new Mat();
-		double threshold1 = 200;	// 閾値１
-		double threshold2 = 3;	// 閾値２
+		double threshold1 = this.currentOperation.mThresHold1;	// 閾値１
+		double threshold2 = this.currentOperation.mThresHold2;	// 閾値２
 		Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGB2GRAY);	// オリジナル画像をグレースケール化
 		Imgproc.Canny(gray, gray, threshold1, threshold2); // Cannyアルゴ実行
+
+		String destFile = makeFileName(source, "-canny");
+		getLogger().info("Write to " + destFile);
+		Imgcodecs.imwrite(destFile, gray);
+
 		// 確率的ハフ変換
 		Mat lines = new Mat();
-		Imgproc.HoughLinesP(gray, lines, 1, Math.PI/180, 80, 30, 10);
-		gray.release();
+		Imgproc.HoughLinesP(gray,
+							lines,
+							this.currentOperation.mRho,
+							Math.PI/180,
+							this.currentOperation.mThresHold,
+							this.currentOperation.mMinLineLength,
+							this.currentOperation.mMaxLineGap);
 
-		double[] matrix;
+		double[] matrix = new double[4];
 		Point p1;
 		Point p2;
+		int j=0;
 		for (int i=0; i<lines.cols(); i++) {
-			matrix = lines.get(0, i);
-			p1 = new Point(matrix[0], matrix[1]);
-			p2 = new Point(matrix[2], matrix[3]);
-			Imgproc.line(image, p1, p2, new Scalar(0, 256, 0), 5);
+			for (j=0; j<lines.rows(); j++)
+			{
+				matrix = lines.get(j, i);
+				if (matrix == null) {
+					continue;
+				}
+				p1 = new Point(matrix[0], matrix[1]);
+				p2 = new Point(matrix[2], matrix[3]);
+				Imgproc.line(image, p1, p2, new Scalar(0, 256, 0), 5);
+			}
 		}
-		String destFile = makeFileName(source, "-edge-detected");
+		destFile = makeFileName(source, "-edge-detected");
 		getLogger().info("Write to " + destFile);
 		Imgcodecs.imwrite(destFile, image);
 		
 		// 終了
+		gray.release();
 		lines.release();
 		image.release();
+
+		return true;
+	}
+	
+	/**
+	 * SimpleBlob 検出器による特徴検出
+	 * @return
+	 */
+	private boolean detectSimpleBlob() {
+		File source = this.currentOperation.sourceFile;
+		getLogger().info("Image file: " + source);
+		if (source != null && !source.exists() && !source.isFile()) {
+			return false;
+		}
+		// イメージを読み込む
+		getLogger().fine("Loading image...");
+		Mat image = this.currentOperation.readImageSource();
+		if (image == null) {
+			throw new IllegalArgumentException("Illegal image file.");
+		}
+		getLogger().info("detecting edge...");
+		Mat gray = new Mat();
+		Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGB2GRAY);	// オリジナル画像をグレースケール化
+
+		MatOfKeyPoint matOfKeyPoint = new MatOfKeyPoint();
+		FeatureDetector detector = FeatureDetector.create(FeatureDetector.SIMPLEBLOB);
+		detector.detect(gray, matOfKeyPoint);
+		
+		List<KeyPoint> keyPoints = matOfKeyPoint.toList();
+		for (KeyPoint kp : keyPoints) {
+			Imgproc.circle(image, kp.pt, (int)kp.size, new Scalar(0, 200, 0));
+		}
+		
+		String destFile = makeFileName(source, "-simple-blob");
+		getLogger().info("Write to " + destFile);
+		Imgcodecs.imwrite(destFile, image);
+		
+		image.release();
+		gray.release();
 
 		return true;
 	}

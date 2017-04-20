@@ -32,7 +32,9 @@ public class Main {
 		pilot.check();
 		
 		if (args.length < 2) {
-			printUsage();
+			MainFrame frame = new MainFrame("OpenCV Pilot");
+			frame.setPilot(pilot);
+			frame.start();
 			return;
 		}
 		
@@ -40,9 +42,10 @@ public class Main {
 		operation.sourceFile = new File(args[1]);
 		pilot.flight(operation);
 		
-		MainFrame frame = new MainFrame("OpenCV Pilot");
-		frame.setImageSourceDir(new File(".").toPath());
-		frame.start();
+//		MainFrame frame = new MainFrame("OpenCV Pilot");
+//		frame.setPilot(pilot);
+//		frame.setImageSourceDir(operation.sourceFile.getParentFile().toPath());
+//		frame.start();
 		
 		System.out.println("Finish.");
 	}
@@ -62,10 +65,5 @@ public class Main {
 		}
 		return ope;
 	}
-	
-	private static void printUsage() {
-		
-	}
-
 }
 
