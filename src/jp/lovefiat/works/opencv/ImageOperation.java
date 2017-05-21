@@ -13,6 +13,7 @@ public class ImageOperation {
 	public double mRho;
 	public double mMaxLineGap;
 	public double mMinLineLength;
+	private Mat sourceImage;
 	
 	/**
 	 * 静止画操作
@@ -40,8 +41,22 @@ public class ImageOperation {
 	 * イメージソースファイルを読み込む
 	 * @return イメージオブジェクト
 	 */
-	public Mat readImageSource() {
+	private Mat readImageSource() {
 		return Imgcodecs.imread(sourceFile.getAbsolutePath());
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public Mat getImageSource() {
+		if (this.sourceImage == null) {
+			this.sourceImage = readImageSource();
+		}
+		return this.sourceImage;
+	}
+	
+	public Operator getOperator() {
+		return this.operation;
 	}
 
 }

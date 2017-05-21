@@ -143,7 +143,7 @@ public class Pilot {
 		}
 		// イメージを読み込む
 		getLogger().fine("Loading image...");
-		Mat image = this.currentOperation.readImageSource();
+		Mat image = this.currentOperation.getImageSource();
 		if (image == null) {
 			throw new IllegalArgumentException("Illegal image file.");
 		}
@@ -188,7 +188,7 @@ public class Pilot {
 		}
 		// イメージを読み込む
 		getLogger().fine("Loading image...");
-		Mat image = this.currentOperation.readImageSource();
+		Mat image = this.currentOperation.getImageSource();
 		if (image == null) {
 			throw new IllegalArgumentException("Illegal image file.");
 		}
@@ -221,7 +221,7 @@ public class Pilot {
 		}
 		// イメージを読み込む
 		getLogger().fine("Loading image...");
-		Mat image = this.currentOperation.readImageSource();
+		Mat image = this.currentOperation.getImageSource();
 		if (image == null) {
 			throw new IllegalArgumentException("Illegal image file.");
 		}
@@ -250,10 +250,8 @@ public class Pilot {
 		double[] matrix = new double[4];
 		Point p1;
 		Point p2;
-		int j=0;
-		for (int i=0; i<lines.cols(); i++) {
-			for (j=0; j<lines.rows(); j++)
-			{
+		for (int j=0; j<lines.rows(); j++) {
+			for (int i=0; i<lines.cols(); i++) {
 				matrix = lines.get(j, i);
 				if (matrix == null) {
 					continue;
@@ -287,7 +285,7 @@ public class Pilot {
 		}
 		// イメージを読み込む
 		getLogger().fine("Loading image...");
-		Mat image = this.currentOperation.readImageSource();
+		Mat image = this.currentOperation.getImageSource();
 		if (image == null) {
 			throw new IllegalArgumentException("Illegal image file.");
 		}
